@@ -18,6 +18,7 @@ type Template = { id: string; title: string; max_score: number };
 type ItemRow = { item_key: string; label: string; description: string } & Record<string, number | string | undefined>;
 type Staff = { id: string; name: string; role?: string; staff_code?: string | null };
 type EvaluationCell = { period: string; evaluator_role: string; staff_id: string; item_key: string; score: number };
+type EvalKind = 'self' | 'mgr';
 
 function buildPlaceholderRow(staffList: Staff[]): ItemRow {
   const base: ItemRow = {
@@ -53,7 +54,7 @@ export default function Dashboard() {
   const [showDify, setShowDify] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeEvaluator, setActiveEvaluator] = useState<'self' | 'mgr'>('self');
+  const [activeEvaluator, setActiveEvaluator] = useState<EvalKind>('self');
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [savingItems, setSavingItems] = useState(false);
   const [creatingStaff, setCreatingStaff] = useState(false);
@@ -676,7 +677,7 @@ export default function Dashboard() {
           <span>評価タイプ</span>
           <select
             value={activeEvaluator}
-            onChange={(e) => setActiveEvaluator(e.target.value as 'self' | 'mgr')}
+            onChange={(e) => setActiveEvaluator(e.target.value as EvalKind)}
             disabled={loading}
           >
             <option value="self">自己評価</option>
@@ -714,10 +715,10 @@ export default function Dashboard() {
               suppressDragLeaveHidesColumns
               singleClickEdit
               stopEditingWhenCellsLoseFocus
-              enterMovesDownAfterEdit
+              enterNavigatesVerticallyAfterEdit
               onCellValueChanged={onCellValueChanged}
               onSelectionChanged={onSelectionChanged}
-              rowSelection={{ mode: 'single' }}
+              rowSelection={{ mode: 'singleRow' }}
               getRowId={(params) => params.data.item_key}
               isRowSelectable={(node) => {
                 const key = node?.data?.item_key;
@@ -853,11 +854,12 @@ export default function Dashboard() {
   );
 }
 
-function parseKind(field: string | undefined) {
-  if (!field) return [null, null] as const;
-  const match = field.match(/^(self|mgr)_(.+)$/);
-  return match ? ([match[1], match[2]] as const) : ([null, null] as const);
+function parseKind(field: string | undefined): [EvalKind, string] | [null, null] {
+  if (!field) return [null, null];
+  const m = field.match(/^(self|mgr)_(.+)$/);
+  return m ? [m[1] as EvalKind, m[2]] : [null, null];
 }
+
 
 function formatScoreCellDisplay(value: unknown, maxScore: number) {
   if (value === null || value === undefined || value === '') {
