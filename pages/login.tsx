@@ -30,20 +30,13 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true); setError(null);
     try {
-      // 1) Supabaseで認証
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if (error || !data.session) throw new Error("メールまたはパスワードが無効です");
-
-      // 2) サーバJWTへ交換（ヘッダで渡す）
-      const at = data.session.access_token;
-      const r = await fetch(`${API_BASE}/auth/supabase`, {
+      const r = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${at}` },
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-
-      let j: any = null;
-      try { j = await r.json(); } catch { /* HTML応答などを考慮して握りつぶす */ }
-      if (!r.ok || !j?.token) throw new Error(j?.error || "サーバ認証に失敗しました");
+      const j = await r.json().catch(async () => ({ error: await r.text() }));
+      if (!r.ok || !j.token) throw new Error(j?.error || "サーバ認証に失敗しました");
 
       const tenantId = j.tenantId || DEFAULT_TENANT;
       localStorage.setItem("kinder.jwt", j.token);
@@ -55,6 +48,7 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="login-page">

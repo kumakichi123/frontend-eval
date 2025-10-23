@@ -43,7 +43,7 @@ export default function DifyModal({ onClose, onApply, tenantId, role, apiBase, t
       });
       const json = (await res.json().catch(() => null)) as (Partial<DifyResult> & { error?: string }) | null;
       if (!res.ok || !json) {
-        throw new Error(json?.error || `Dify\u30ea\u30af\u30a8\u30b9\u30c8\u304c\u5931\u6557\u3057\u307e\u3057\u305f (${res.status})`);
+        throw new Error(json?.error || `AI\u751f\u6210\u30ea\u30af\u30a8\u30b9\u30c8\u304c\u5931\u6557\u3057\u307e\u3057\u305f (${res.status})`);
       }
       setResult(normalizeResult(json));
     } catch (e: any) {
@@ -58,7 +58,7 @@ export default function DifyModal({ onClose, onApply, tenantId, role, apiBase, t
   return (
     <div style={backdropStyle}>
       <div style={panelStyle}>
-        <h3 style={{ margin: 0, marginBottom: 12 }}>{'Dify\u751f\u6210'}</h3>
+        <h3 style={{ margin: 0, marginBottom: 12 }}>{'AI\u751f\u6210'}</h3>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <label style={fieldLabelStyle}>
